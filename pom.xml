@@ -105,7 +105,7 @@
     </developer>
   </developers>
   <properties>
-    <!-- isw2 project - sonar integration -->ì
+    <!-- isw2 project - sonar integration -->
     <sonar.organization>alessandrochillotti</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
