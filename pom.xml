@@ -71,6 +71,7 @@
     <module>tests</module>
     <module>native-io</module>
     <module>testtools</module>
+    <module>module-tests</module>
   </modules>
   <mailingLists>
     <mailingList>
@@ -1247,6 +1248,29 @@
                   <!-- we have a dedicated distribution module in bookkeeper-dist -->
                   <skipAssembly>true</skipAssembly>
                 </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <!-- profile user for jacoco integration -->
+    <profile>
+      <id>coverage</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>prepare-agent</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
               </execution>
             </executions>
           </plugin>

@@ -44,3 +44,4 @@ package-lock.json
 # gradle
 build/
 .gradle/
+/.metadata/
