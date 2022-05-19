@@ -17,7 +17,7 @@
         <!-- example: org.apache.bookkeeper -->
         <dependency>
                 <groupId>org.apache.bookkeeper</groupId>
-                <artifactId>bookkeeper-common-allocator</artifactId>
+                <artifactId>bookkeeper-server</artifactId>
                 <version>4.16.0-SNAPSHOT</version>
         </dependency>
 </dependencies>
