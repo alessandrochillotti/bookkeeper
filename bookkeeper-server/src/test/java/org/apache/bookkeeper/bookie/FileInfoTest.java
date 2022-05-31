@@ -23,47 +23,51 @@ public class FileInfoTest {
 	@RunWith(Parameterized.class)
 	public static class MoveToNewLocationTest {
 		
-		@Mock
 		private File newFile;
 		
 		private long size;		
-		private boolean expectedResult;
+		private String expectedResult;
 	
 		private FileInfo fi;
 		
 		@Parameters
 		public static Collection<Object[]> data() throws IOException {
 	        return Arrays.asList(new Object[][] {
-	        	{ null, 0, false },
-	        	{ new File("/tmp/origin"), 0, false },
-	        	{ new File("/tmp/origin"), -1, false}, 
-	        	{ new File("/tmp/origin"), 10, true }
+	        	{ false, null, 0, "false" },
+	        	{ false, new File("/tmp/origin"), 0, "false" },
+	        	{ false, new File("/tmp/origin"), -1, "false" }, 
+	        	{ false, new File("/tmp/origin"), 10, "false" },
+	        	{ true, new File("/tmp/origin"), 10, "true" }
 	        });
 	    }
 		
-		public MoveToNewLocationTest(File newFile, long size, Object expectedResult) {
-				configure(newFile, size);
+		public MoveToNewLocationTest(boolean create, File newFile, long size, String expectedResult) {
+				configure(create, newFile, size, expectedResult);
 		}
 		
-		public void configure(File newFile, long size) {
+		public void configure(boolean create, File newFile, long size, String expectedResult) {
 			byte[] masterKey = {'a', 'b', 'c'};
 			try {
 				fi = new FileInfo(new File("/tmp/original"), masterKey, 1);
-				// fi.checkOpen(true);
+				fi.checkOpen(create);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			
+			this.newFile = newFile;
+			this.size = size;
+			this.expectedResult = expectedResult;
 		}
 		
 		@Test
 		public void moveToNewLocationTest() {
 			try {
 				fi.moveToNewLocation(newFile, size);
-				Assert.assertEquals(expectedResult, fi.isSameFile(newFile));
+				Assert.assertEquals(expectedResult, String.valueOf(fi.isSameFile(newFile)));
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (NullPointerException e) {
-				Assert.assertTrue(true);
+				Assert.assertTrue(e.getMessage().contains(expectedResult));
 			}
 		}
 	}
@@ -88,12 +92,12 @@ public class FileInfoTest {
 		@Parameters
 		public static Collection<Object[]> data() {
 	        return Arrays.asList(new Object[][] {
-	        	{ null, 0, false, null },
+	        	{ null, 0, false, "0" },
 	        	{ ByteBuffer.wrap(new byte[0]), 0, false, "0" },
 	        	{ ByteBuffer.wrap(new byte[10]), -1, false, "0" },
 	        	{ ByteBuffer.wrap(new byte[10]), 1, false, "0" },
 	        	{ ByteBuffer.wrap(new byte[10]), 0, true, "0" },
-	        	{ ByteBuffer.wrap(new byte[10]), Long.MAX_VALUE, true, "Negative position" }
+	        	{ ByteBuffer.wrap(new byte[10]), Long.MAX_VALUE, true, "0" }
 	        });
 	    }
 		
