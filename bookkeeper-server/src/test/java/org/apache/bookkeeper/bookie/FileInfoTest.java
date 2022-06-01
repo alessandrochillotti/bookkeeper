@@ -1,7 +1,5 @@
 package org.apache.bookkeeper.bookie;
 
-import static org.mockito.Mockito.mockitoSession;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -14,8 +12,6 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 
 @RunWith(Enclosed.class)
 public class FileInfoTest {
@@ -37,7 +33,9 @@ public class FileInfoTest {
 	        	{ false, new File("/tmp/origin"), 0, "false" },
 	        	{ false, new File("/tmp/origin"), -1, "false" }, 
 	        	{ false, new File("/tmp/origin"), 10, "false" },
-	        	{ true, new File("/tmp/origin"), 10, "true" }
+	        	{ true, new File("/tmp/origin"), 10, "true" },
+	        	{ true, new File("/tmp/original"), 10, "true" },
+	        	{ true, new File("/tmp/origin"), Integer.MAX_VALUE, "true" }
 	        });
 	    }
 		
@@ -57,6 +55,7 @@ public class FileInfoTest {
 			this.newFile = newFile;
 			this.size = size;
 			this.expectedResult = expectedResult;
+			
 		}
 		
 		@Test
