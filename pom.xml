@@ -1165,7 +1165,7 @@
             <version>${maven-surefire-plugin.version}</version>
             <configuration>
               <argLine>-Xmx2G -Djava.net.preferIPv4Stack=true</argLine>
-              <redirectTestOutputToFile>false</redirectTestOutputToFile>
+              <redirectTestOutputToFile>true</redirectTestOutputToFile>
               <forkCount>${forkCount.variable}</forkCount>
               <reuseForks>false</reuseForks>
               <forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>

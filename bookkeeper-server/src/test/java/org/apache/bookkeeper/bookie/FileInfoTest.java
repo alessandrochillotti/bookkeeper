@@ -29,9 +29,9 @@ public class FileInfoTest {
 		@Parameters
 		public static Collection<Object[]> data() throws IOException {
 	        return Arrays.asList(new Object[][] {
-	        	{ false, null, 0, "false" },
-	        	{ false, new File("/tmp/origin"), 0, "false" },
-	        	{ false, new File("/tmp/origin"), -1, "false" }, 
+	        	{ true, null, 0, null },
+	        	{ true, new File("/tmp/origin"), 0, "true" },
+	        	{ true, new File("/tmp/origin"), -1, "true" }, 
 	        	{ false, new File("/tmp/origin"), 10, "false" },
 	        	{ true, new File("/tmp/origin"), 10, "true" },
 	        	{ true, new File("/tmp/original"), 10, "true" },
@@ -55,7 +55,6 @@ public class FileInfoTest {
 			this.newFile = newFile;
 			this.size = size;
 			this.expectedResult = expectedResult;
-			
 		}
 		
 		@Test
@@ -64,9 +63,9 @@ public class FileInfoTest {
 				fi.moveToNewLocation(newFile, size);
 				Assert.assertEquals(expectedResult, String.valueOf(fi.isSameFile(newFile)));
 			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (NullPointerException e) {
 				Assert.assertTrue(e.getMessage().contains(expectedResult));
+			} catch (NullPointerException e) {
+				Assert.assertEquals(expectedResult, e.getMessage());
 			}
 		}
 	}
@@ -91,23 +90,27 @@ public class FileInfoTest {
 		@Parameters
 		public static Collection<Object[]> data() {
 	        return Arrays.asList(new Object[][] {
-	        	{ null, 0, false, "0" },
-	        	{ ByteBuffer.wrap(new byte[0]), 0, false, "0" },
-	        	{ ByteBuffer.wrap(new byte[10]), -1, false, "0" },
-	        	{ ByteBuffer.wrap(new byte[10]), 1, false, "0" },
-	        	{ ByteBuffer.wrap(new byte[10]), 0, true, "0" },
-	        	{ ByteBuffer.wrap(new byte[10]), Long.MAX_VALUE, true, "0" }
+	        	{ false, null, 0, false, "0" },
+	        	{ true, null, 0, false, null },
+	        	{ true, ByteBuffer.wrap(new byte[0]), 0, false, "0" },
+	        	{ true, ByteBuffer.wrap("ciao".getBytes()), -1, false, "0" },
+	        	{ true, ByteBuffer.wrap("ciao".getBytes()), 1, false, "3" },
+	        	{ true, ByteBuffer.wrap("ciao".getBytes()), 0, false, "4" },
+	        	{ true, ByteBuffer.wrap("ciao".getBytes()), 0, true, "0" },
+	        	{ false, ByteBuffer.wrap("ciao".getBytes()), Long.MAX_VALUE, true, "Negative position" },
+	        	{ true, ByteBuffer.wrap("ciao".getBytes()), Long.MAX_VALUE, true, "Negative position" }
 	        });
 	    }
 		
-		public ReadAbsoluteTest(ByteBuffer bb, long start, boolean bestEffort, String expectedResult) {
-			configure(bb, start, bestEffort, expectedResult);
+		public ReadAbsoluteTest(boolean create, ByteBuffer bb, long start, boolean bestEffort, String expectedResult) {
+			configure(create, bb, start, bestEffort, expectedResult);
 		}
 		
-		public void configure(ByteBuffer bb, long start, boolean bestEffort, String expectedResult) {
+		public void configure(boolean create, ByteBuffer bb, long start, boolean bestEffort, String expectedResult) {
 			byte[] masterKey = {'a', 'b', 'c'};
 			try {
 				fi = new FileInfo(new File("/tmp/original"), masterKey, 1);
+				fi.checkOpen(create);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
