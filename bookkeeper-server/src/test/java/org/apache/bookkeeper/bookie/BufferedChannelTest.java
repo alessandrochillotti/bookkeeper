@@ -22,11 +22,8 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.mockito.Mockito;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
-
-import com.sun.tools.javac.util.ByteBuffer;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -65,8 +62,9 @@ public class BufferedChannelTest {
 	            { false, 10, 10, buf, 0, 10, "10"},
 	            { true, 10, 10, buf, 0, 10, "Reading from filechannel returned a non-positive value. Short read."},
 	            { true, 0, 5, buf, 0, 5, "0"},
-	            { false, 0, 10, buf, buf.maxCapacity()-1, 1, "0"},
-	            { false, 0, 10, buf, buf.maxCapacity()+1, 10, "position"},
+	            { true, 0, 5, buf, Long.MIN_VALUE, 5, "Negative position"},
+	            { false, 0, 10, buf, buf.maxCapacity()-1, 1, "minWritableBytes : -2147483636 (expected: >= 0)"},
+	            { false, 0, 10, buf, buf.maxCapacity()+1, 10, "Negative position"},
 	            { false, 0, 10, buf, 0, buf.maxCapacity()-1, "Read past EOF"},
 	            { false, 0, 10, buf, 0, buf.maxCapacity()+1, "0"},
 	        });
@@ -83,7 +81,7 @@ public class BufferedChannelTest {
 		        RandomAccessFile randomAccessFile = new RandomAccessFile(newLogFile, "rw");
 		        FileChannel fC;
 		        
-		    	ByteBuf toWrite = Unpooled.buffer();
+		        ByteBuf toWrite = Unpooled.buffer();
 		 		toWrite.markReaderIndex();
 		 		toWrite.markWriterIndex();
 		        
@@ -94,7 +92,7 @@ public class BufferedChannelTest {
 		 		if (mock && numberOfZero == 10) {
 		 			fC = spy(randomAccessFile.getChannel());
 		 			doReturn(0).when(fC).read(any(java.nio.ByteBuffer.class), anyLong());
-		 			
+		 				
 		 			allocator = UnpooledByteBufAllocator.DEFAULT;
 		 		} else if (mock && numberOfZero == 5) {
 		 			fC = randomAccessFile.getChannel();
@@ -138,8 +136,8 @@ public class BufferedChannelTest {
 				Assert.assertEquals(this.expectedResult, e.getMessage());
 			} catch (NullPointerException e) {
 				Assert.assertEquals(this.expectedResult, e.getMessage());
-			} catch (Exception e) {
-				Assert.assertTrue(e.getMessage().contains(expectedResult));
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals(this.expectedResult, e.getMessage());
 			}
 		}
 		
