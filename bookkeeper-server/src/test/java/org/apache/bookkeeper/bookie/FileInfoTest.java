@@ -8,11 +8,14 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import io.netty.buffer.Unpooled;
 
 @RunWith(Enclosed.class)
 public class FileInfoTest {
@@ -104,31 +107,46 @@ public class FileInfoTest {
 		private String expectedResult;
 		
 		private FileInfo fi;
-				
+		
 		@Parameters
 		public static Collection<Object[]> data() {
 	        return Arrays.asList(new Object[][] {
-	        	{ false, null, 0, false, "0" },
-	        	{ true, null, 0, false, null },
-	        	{ true, ByteBuffer.wrap(new byte[0]), 0, false, "0" },
-	        	{ true, ByteBuffer.wrap("ciao".getBytes()), -1, false, "0" },
-	        	{ true, ByteBuffer.wrap("ciao".getBytes()), 1, false, "3" },
-	        	{ true, ByteBuffer.wrap("ciao".getBytes()), 0, false, "4" },
-	        	{ true, ByteBuffer.wrap("ciao".getBytes()), 0, true, "0" },
-	        	{ false, ByteBuffer.wrap("ciao".getBytes()), Long.MAX_VALUE, true, "Negative position" },
-	        	{ true, ByteBuffer.wrap("ciao".getBytes()), Long.MAX_VALUE, true, "Negative position" }
+	        	{ null, null, 0, false, null },
+	        	{ null, ByteBuffer.allocate(0), 0, false, "0" },
+	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), -1, false, "4" },
+	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 1, false, "Short read at" },
+	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 1, true, "3" },
+	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 0, false, "4" },
+	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 0, true, "4" },
+	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), Long.MAX_VALUE, true, "Negative position" }
 	        });
 	    }
 		
-		public ReadAbsoluteTest(boolean create, ByteBuffer bb, long start, boolean bestEffort, String expectedResult) {
-			configure(create, bb, start, bestEffort, expectedResult);
+		public ReadAbsoluteTest(ByteBuffer content, ByteBuffer bb, long start, boolean bestEffort, String expectedResult) {
+			configure(content, bb, start, bestEffort, expectedResult);
 		}
 		
-		public void configure(boolean create, ByteBuffer bb, long start, boolean bestEffort, String expectedResult) {
-			byte[] masterKey = {'a', 'b', 'c'};
+		@Before
+		public void tearDownEnvironment() {
 			try {
-				fi = new FileInfo(new File("/tmp/original"), masterKey, 1);
-				fi.checkOpen(create);
+				fi.close(true);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		public void configure(ByteBuffer content, ByteBuffer bb, long start, boolean bestEffort, String expectedResult) {
+			byte[] masterKey = {'a', 'b', 'c', 'd'};
+			
+			try {
+				fi = new FileInfo(new File("/tmp/file"), masterKey, 0);
+				
+				if (content != null) {
+					ByteBuffer[] array = new ByteBuffer[1];
+					array[0] = content;
+					
+					fi.write(array, 0);
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -144,12 +162,12 @@ public class FileInfoTest {
 			try {
 				Assert.assertEquals(expectedResult, Integer.toString(fi.read(bb, start, bestEffort)));
 			} catch (IOException e) {
-				e.printStackTrace();
+				Assert.assertTrue(e.getMessage().contains(expectedResult));
 			} catch (NullPointerException e) {
 				Assert.assertEquals(expectedResult, e.getMessage());
 			} catch (IllegalArgumentException e) {
 				Assert.assertEquals(expectedResult, e.getMessage());
-			}
+			} 
 		} 
 	}
 	
