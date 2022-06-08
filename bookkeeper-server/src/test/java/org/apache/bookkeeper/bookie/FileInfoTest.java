@@ -118,7 +118,9 @@ public class FileInfoTest {
 	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 1, true, "3" },
 	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 0, false, "4" },
 	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 0, true, "4" },
-	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), Long.MAX_VALUE, true, "Negative position" }
+	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), Long.MAX_VALUE, true, "Negative position" },
+	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 4, true, "0" },
+	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 4, false, "Short read at" }
 	        });
 	    }
 		
