@@ -43,7 +43,6 @@ public class BufferedChannelTest {
 		private long pos;
 		private int length;
 		private String expectedResult;
-		private boolean mock;
 		
 		private BufferedChannel bC;
 		
@@ -66,7 +65,7 @@ public class BufferedChannelTest {
 	            { false, 0, 10, buf, buf.maxCapacity()-1, 1, "minWritableBytes : -2147483636 (expected: >= 0)"},
 	            { false, 0, 10, buf, buf.maxCapacity()+1, 10, "Negative position"},
 	            { false, 0, 10, buf, 0, buf.maxCapacity()-1, "Read past EOF"},
-	            { false, 0, 10, buf, 0, buf.maxCapacity()+1, "0"},
+	            { false, 0, 10, buf, 0, buf.maxCapacity()+1, "0"}
 	        });
 	    }
 		
@@ -113,11 +112,9 @@ public class BufferedChannelTest {
 				
 				if (!mock || numberOfZero != 5)
 					this.bC.write(toWrite);
+				else if (mock && numberOfZero == 5)
+					bC.readBuffer.writerIndex(1);
 				
-				if (mock) {
-					ByteBuf writeBuffer = Whitebox.getInternalState(bC, "writeBuffer");
-					writeBuffer = null;
-				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -160,7 +157,9 @@ public class BufferedChannelTest {
 	            { 4, 65536, 0, "4" },
 	            { 4, 65536, 1, "4"},
 	            { 10, 65536, Integer.MAX_VALUE, "10"},
-	            { 15, 2, 0, "15"}
+	            { 15, 2, 0, "15"},
+	            
+	            { 0, 65536, 2, ""}
 	        });
 	    }
 				

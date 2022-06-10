@@ -7,15 +7,13 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-
-import io.netty.buffer.Unpooled;
 
 @RunWith(Enclosed.class)
 public class FileInfoTest {
@@ -120,7 +118,7 @@ public class FileInfoTest {
 	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 0, true, "4" },
 	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), Long.MAX_VALUE, true, "Negative position" },
 	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 4, true, "0" },
-	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 4, false, "Short read at" }
+	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 4, false, "Short read at" },
 	        });
 	    }
 		
@@ -128,9 +126,10 @@ public class FileInfoTest {
 			configure(content, bb, start, bestEffort, expectedResult);
 		}
 		
-		@Before
+		@After
 		public void tearDownEnvironment() {
 			try {
+				fi.delete();
 				fi.close(true);
 			} catch (IOException e) {
 				e.printStackTrace();
