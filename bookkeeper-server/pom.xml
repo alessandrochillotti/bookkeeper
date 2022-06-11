@@ -348,6 +348,41 @@
         </plugins>
       </build>
     </profile>
+    <!-- pitest profile -->
+   <profile>
+	<id>mutation-testing</id>
+	<activation>
+		<activeByDefault>false</activeByDefault>
+	</activation>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.pitest</groupId>
+				<artifactId>pitest-maven</artifactId>
+				<version>1.8.0</version>
+				<configuration>
+					<targetClasses>
+						<param>org.apache.bookkeeper.bookie.BufferedChannel</param>
+						<param>org.apache.bookkeeper.bookie.FileInfo</param>
+					</targetClasses>
+					<targetTests>
+						<param>org.apache.bookkeeper.bookie.BufferedChannelTest</param>
+						<param>org.apache.bookkeeper.bookie.FileInfoTest</param>
+					</targetTests>
+				</configuration>
+				<executions>
+	                <execution>
+	                    <id>pitest-report</id>
+	                    <phase>test-compile</phase>
+	                    <goals>
+	                        <goal>mutationCoverage</goal>
+	                    </goals>
+	                </execution>
+				</executions>
+			</plugin>
+		 </plugins>
+    </build>
+   </profile>
      <!-- ba-dua profile -->
     <profile>
       <id>data-flow-coverage</id>
