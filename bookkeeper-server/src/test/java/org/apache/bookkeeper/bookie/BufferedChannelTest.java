@@ -14,6 +14,7 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,6 +50,8 @@ public class BufferedChannelTest {
 		@Parameters
 		public static Collection<Object[]> data() {
 			ByteBuf buf = Unpooled.buffer();
+			ByteBuf greatBuffer = Unpooled.buffer();
+			greatBuffer.capacity(50);
 			
 	        return Arrays.asList(new Object[][] {
 	            { false, 0, 0, null, 0, 0, "0" },
@@ -65,7 +68,8 @@ public class BufferedChannelTest {
 	            { false, 0, 10, buf, buf.maxCapacity()-1, 1, "minWritableBytes : -2147483636 (expected: >= 0)"},
 	            { false, 0, 10, buf, buf.maxCapacity()+1, 10, "Negative position"},
 	            { false, 0, 10, buf, 0, buf.maxCapacity()-1, "Read past EOF"},
-	            { false, 0, 10, buf, 0, buf.maxCapacity()+1, "0"}
+	            { false, 0, 10, buf, 0, buf.maxCapacity()+1, "0"},
+	            { false, 0, 4, greatBuffer, 3, 4, "Read past EOF"}
 	        });
 	    }
 		
@@ -115,6 +119,11 @@ public class BufferedChannelTest {
 				else if (mock && numberOfZero == 5)
 					bC.readBuffer.writerIndex(1);
 				
+				if (numberOfZero == 4) {
+					bC.flush();
+				}
+
+				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -158,8 +167,9 @@ public class BufferedChannelTest {
 	            { 4, 65536, 1, "4"},
 	            { 10, 65536, Integer.MAX_VALUE, "10"},
 	            { 15, 2, 0, "15"},
+	            { 0, 65536, 2, ""},
 	            
-	            { 0, 65536, 2, ""}
+	            { 1, 7, 0, "1"},
 	        });
 	    }
 				
@@ -170,6 +180,12 @@ public class BufferedChannelTest {
 		public void configure(int contentSrc, int capacity, int unpersistedBytesBound, String expectedResult) {
 			if (contentSrc == 0) {
 				this.src = Unpooled.EMPTY_BUFFER;
+			} else if (contentSrc == 1) {
+				this.src = Unpooled.buffer();
+				this.src.capacity(8);
+				
+				this.src.writeInt(1);
+				this.src.writeInt(2);
 			} else if (contentSrc > 0){
 				this.src = Unpooled.buffer();
 				this.src.writeInt(contentSrc);

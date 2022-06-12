@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,9 +50,9 @@ public class FileInfoTest {
 		
 		public void configure(boolean create, File newFile, long size, boolean rlocfile, String expectedResult) {
 			byte[] masterKey = {'a', 'b', 'c'};
-			File old = new File("/tmp/original");
+			File oldFile = new File("/tmp/original");
 			try {
-				fi = new FileInfo(old, masterKey, 1);
+				fi = new FileInfo(oldFile, masterKey, 1);
 				fi.checkOpen(create);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -81,8 +83,7 @@ public class FileInfoTest {
 				fi.moveToNewLocation(newFile, size);
 				Assert.assertEquals(expectedResult, String.valueOf(fi.isSameFile(newFile)));
 			} catch (IOException e) {
-				e.printStackTrace();
-				// Assert.assertEquals(expectedResult, e.getMessage());
+				Assert.assertEquals(expectedResult, e.getMessage());
 			} catch (NullPointerException e) {
 				Assert.assertEquals(expectedResult, e.getMessage());
 			}
@@ -109,7 +110,7 @@ public class FileInfoTest {
 		@Parameters
 		public static Collection<Object[]> data() {
 	        return Arrays.asList(new Object[][] {
-	        	{ null, null, 0, false, null },
+	        	{ null, null, 0, false, "0" },
 	        	{ null, ByteBuffer.allocate(0), 0, false, "0" },
 	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), -1, false, "4" },
 	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 1, false, "Short read at" },
@@ -117,8 +118,7 @@ public class FileInfoTest {
 	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 0, false, "4" },
 	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 0, true, "4" },
 	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), Long.MAX_VALUE, true, "Negative position" },
-	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 4, true, "0" },
-	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 4, false, "Short read at" },
+	        	{ ByteBuffer.wrap("ciao".getBytes()), ByteBuffer.allocate(4), 4, true, "0" }
 	        });
 	    }
 		
@@ -163,7 +163,7 @@ public class FileInfoTest {
 			try {
 				Assert.assertEquals(expectedResult, Integer.toString(fi.read(bb, start, bestEffort)));
 			} catch (IOException e) {
-				Assert.assertTrue(e.getMessage().contains(expectedResult));
+				Assert.assertTrue(e.getMessage().startsWith(expectedResult));
 			} catch (NullPointerException e) {
 				Assert.assertEquals(expectedResult, e.getMessage());
 			} catch (IllegalArgumentException e) {
